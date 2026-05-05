@@ -7,9 +7,11 @@ import br.com.boni.spring_boot_essentials.database.repository.IAlunosRepository;
 import br.com.boni.spring_boot_essentials.database.repository.IAvaliacoesFisicasRepository;
 import br.com.boni.spring_boot_essentials.database.repository.ITreinosRepository;
 import br.com.boni.spring_boot_essentials.dto.AlunosDto;
+import br.com.boni.spring_boot_essentials.dto.UpdateAlunosDto;
 import br.com.boni.spring_boot_essentials.exception.BadrequestExeption;
 import br.com.boni.spring_boot_essentials.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ public class AlunosService {
     private final IAlunosRepository alunosRepository;
     private final ITreinosRepository treinosRepository;
     private final IAvaliacoesFisicasRepository avaliacoesFisicasRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public void criarAluno(AlunosDto alunosDto) throws BadrequestExeption {
         AlunosEntity aluno = alunosRepository.findByEmail(alunosDto.getEmail()).orElse(null);
@@ -34,6 +37,23 @@ public class AlunosService {
                 .email(alunosDto.getEmail())
                 .build());
     }
+
+    public void editarAluno(Integer alunoId, UpdateAlunosDto alunosDto)
+            throws NotFoundException {
+
+        AlunosEntity aluno = alunosRepository.findById(alunoId)
+                .orElseThrow(() -> new NotFoundException("Aluno não encontrado!"));
+
+        aluno.setNome(alunosDto.getNome());
+        aluno.setEmail(alunosDto.getEmail());
+
+        if (alunosDto.getSenha() != null && !alunosDto.getSenha().isBlank()) {
+            aluno.setSenha(passwordEncoder.encode(alunosDto.getSenha()));
+        }
+
+        alunosRepository.save(aluno);
+    }
+
 
     public AvaliacaoFisicasEntity getAlunoAvaliacao(Integer alunoId) throws NotFoundException {
         AlunosEntity aluno = alunosRepository.findByIdFetch(alunoId).orElseThrow(() -> new NotFoundException("Aluno não encontrado"));

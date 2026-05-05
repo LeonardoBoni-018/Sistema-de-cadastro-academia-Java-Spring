@@ -14,6 +14,6 @@ public interface IAlunosRepository extends JpaRepository<AlunosEntity, Integer> 
 
     Optional<AlunosEntity> findByEmail(String email);
 
-    @Query("SELECT a FROM AlunosEntity a JOIN FETCH a.avaliacaoFisica WHERE a.id = :alunoId")
+    @Query("SELECT a FROM AlunosEntity a LEFT JOIN FETCH a.avaliacaoFisica WHERE a.id = :alunoId")
     Optional<AlunosEntity> findByIdFetch(@Param("alunoId") Integer alunoId);
 }

@@ -2,11 +2,10 @@ package br.com.boni.spring_boot_essentials.controller;
 
 import br.com.boni.spring_boot_essentials.database.model.AvaliacaoFisicasEntity;
 import br.com.boni.spring_boot_essentials.dto.AlunosDto;
-import br.com.boni.spring_boot_essentials.dto.AvalicaoFisicaDto;
+import br.com.boni.spring_boot_essentials.dto.UpdateAlunosDto;
 import br.com.boni.spring_boot_essentials.exception.BadrequestExeption;
 import br.com.boni.spring_boot_essentials.exception.NotFoundException;
 import br.com.boni.spring_boot_essentials.service.AlunosService;
-import br.com.boni.spring_boot_essentials.service.AvaliacaoFisicaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/alunos")
 @RequiredArgsConstructor
 @Validated
-@EnableWebSecurity
 public class AlunosController {
 
     private final AlunosService alunosService;
@@ -31,7 +29,7 @@ public class AlunosController {
         alunosService.criarAluno(alunosDto);
     }
 
-    @PreAuthorize("#alunoId == authentication.principal.id or hasRole('ADMIN)")
+    @PreAuthorize("authentication.principal.id == #alunoId or hasRole('ADMIN')")
     @GetMapping("/{alunoId}/avalicao")
     public AvaliacaoFisicasEntity getAvaliacaoFisica(@PathVariable Integer alunoId) throws NotFoundException {
         return alunosService.getAlunoAvaliacao(alunoId);
@@ -43,4 +41,16 @@ public class AlunosController {
     public void removerAluno(@PathVariable Integer alunoId) throws NotFoundException {
         alunosService.deletarAluno(alunoId);
     }
+
+    @PutMapping("/{alunoId}")
+    @PreAuthorize("authentication.principal.id == #alunoId or hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
+    public void atualizarAluno(
+            @PathVariable Integer alunoId,
+            @RequestBody UpdateAlunosDto alunosDto
+    ) throws NotFoundException {
+
+        alunosService.editarAluno(alunoId, alunosDto);
+    }
+
 }
