@@ -10,6 +10,8 @@ import br.com.boni.spring_boot_essentials.service.AvaliacaoFisicaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,21 +19,25 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/alunos")
 @RequiredArgsConstructor
 @Validated
+@EnableWebSecurity
 public class AlunosController {
 
     private final AlunosService alunosService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public void criarAluno(@Valid @RequestBody AlunosDto alunosDto) throws BadrequestExeption {
         alunosService.criarAluno(alunosDto);
     }
 
+    @PreAuthorize("#alunoId == authentication.principal.id or hasRole('ADMIN)")
     @GetMapping("/{alunoId}/avalicao")
     public AvaliacaoFisicasEntity getAvaliacaoFisica(@PathVariable Integer alunoId) throws NotFoundException {
         return alunosService.getAlunoAvaliacao(alunoId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{alunoId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removerAluno(@PathVariable Integer alunoId) throws NotFoundException {
